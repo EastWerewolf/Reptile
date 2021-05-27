@@ -2,18 +2,39 @@ const https = require('https');
 const fs = require('fs');
 const chreeio = require('cheerio')
 const baseUrl = 'https://dl.ixxcc.com/images/'
-const category = ['ElyEE_E子','一只云烧','九曲Jean','你的负卿','半半子',
-    '南桃Momoko','周叽是可爱兔兔','小野妹子','弥音音','念念_D','抖娘利世',
-    '水淼aqua','疯猫ss','白金Saki','秋和柯基','腐团儿','菌烨Tako',
-    '蜜汁猫裘','蠢沫沫','起司块wii','过期米线线喵','魔物喵Nagisa','黑川']
+const category = [
+    'ElyEE_E子', // index 0
+    '一只云烧', // index 1
+    '九曲Jean', // index 2
+    '你的负卿', // index 3
+    '半半子', // index 4
+    '南桃Momoko', // index 5
+    '周叽是可爱兔兔', // index 6
+    '小野妹子', // index 7
+    '弥音音', // index 8
+    '念念_D', // index 9
+    '抖娘利世', // index 10
+    '水淼aqua', // index 11
+    '疯猫ss', // index 12
+    '白金Saki', // index 13
+    '秋和柯基', // index 14
+    '腐团儿', // index 15
+    '菌烨Tako', // index 16
+    '蜜汁猫裘', // index 17
+    '蠢沫沫', // index 18
+    '起司块wii', // index 19
+    '过期米线线喵', // index 20
+    '魔物喵Nagisa', // index 21
+    '黑川' // index 22
+]
 let categoryIndex = 0
 
 // 创建目录 跑一边足够
-// category.forEach(i=>{
-//     fs.mkdir(`./imagePath/${i}`, { recursive: true }, (err) => {
-//         if (err) throw err;
-//     });
-// })
+category.forEach(i=>{
+    fs.mkdir(`./imagePath/${i}`, { recursive: true }, (err) => {
+        if (err) throw err;
+    });
+})
 downloadHtml()
 function downloadHtml(){
     const filePath = category[categoryIndex]
