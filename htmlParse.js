@@ -55,6 +55,10 @@ function downloadHtml(){
                 }
             })
             downloadImg(imgArr,filePath)
+            if(categoryIndex < 22){
+                categoryIndex++
+                downloadHtml()
+            }
         });
     }).on("error", function() {
         console.log('获取网页失败')
@@ -78,8 +82,7 @@ function downloadImg(imgArr,filePath){
             });
             res.on("end", function() {
                 if(imgArrIndex >= imgArr.length -1){
-                    categoryIndex++
-                    downloadHtml()
+                    console.log(`${filePath}部分内容下载完璧`)
                 } else {
                     imgArrIndex++
                     loop()
