@@ -66,7 +66,7 @@ function downloadImg(imgArr,filePath){
                 writeFile(name,imgData,filePath)
             });
         }).on("error", function() {
-            console.log('获取网页失败')
+            console.log('下载图片失败')
         });
     }
     loop()
