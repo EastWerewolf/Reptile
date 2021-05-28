@@ -18,11 +18,9 @@ let categoryIndex = 0;
                 // 创建目录 跑一遍足够
                 if (writePath) {
                     category.forEach(i=>{
-                        let path = ''
+                        let path = i
                         if (i.indexOf('/')> -1){
                             path = i.split('/')[0]
-                        } else {
-                            return
                         }
                         fs.mkdir(`${writePath}${path}`, { recursive: true }, (err) => {
                             if (err) throw err;
@@ -46,14 +44,16 @@ const downloadPart = [{
 // 启动器 读取路径 下载文件 第一次跑需要加上writePath
 const part = 1; // 0/1  0 下载一级目录内容  1下载二级目录内容
 const {readPath,writePath,baseUrl} = downloadPart[part]
-readCategory(readPath).then(category=>{
-    downloadHtml(category,baseUrl)
+readCategory(readPath,writePath).then(category=>{
+    downloadHtml(category,baseUrl,2)
 })
 /*
     category 文件目录
     baseUrl 路径
     downloadType 1 单线  2 并行  默认单线
  */
+const maxConcurrentLimit = 5 // 最大并行限制
+let currentDownLoadCount = 0 //并行纪录
 function downloadHtml(category,baseUrl,downloadType = 1){
     const filePath = category[categoryIndex]
     const Slash = filePath.indexOf('/') > -1 ? '' : '/'
@@ -65,7 +65,8 @@ function downloadHtml(category,baseUrl,downloadType = 1){
             data += chunk;
         });
         res.on("end", function() {
-           const imgArr = []
+            currentDownLoadCount++
+            const imgArr = []
             $ = chreeio.load(data)
             $('a').each((index,ele )=>{
                 const href = $(ele).attr('href') || ''
@@ -78,7 +79,7 @@ function downloadHtml(category,baseUrl,downloadType = 1){
             // 下载方式 二选一即可 这里选择单线下载
             if(downloadType === 1){ // 单线下载 下载图片方法需加上category,baseUrl 参数 并行下载需要去掉这两个参数
                 if (hasImage) { // 有图片下载
-                    downloadImg(imgArr,path,category,baseUrl)
+                    downloadImg(imgArr,path,{category,baseUrl,downloadType})
                 } else { // 无图片进行下一个网页的爬取
                     if(categoryIndex < category.length){
                         categoryIndex++
@@ -87,11 +88,14 @@ function downloadHtml(category,baseUrl,downloadType = 1){
                 }
             } else { // 并行下载 有内存溢出风险
                 if(hasImage){ // 有图片下载图片
-                    downloadImg(imgArr,path)
+                    downloadImg(imgArr,path,{category,baseUrl,downloadType})
                 }
-                if(categoryIndex < category.length){ // 当前网页解析完成进行下一个网页解析
-                    categoryIndex++
-                    downloadHtml(category,baseUrl,downloadType)
+                if(categoryIndex < category.length){ // 当前网页解析完成进行下一个网页解析 maxConcurrentLimit限制并行
+                    if(currentDownLoadCount <= maxConcurrentLimit){
+                        categoryIndex++
+                        downloadHtml(category,baseUrl,downloadType)
+                    }
+                    
                 }
             }
 
@@ -102,7 +106,7 @@ function downloadHtml(category,baseUrl,downloadType = 1){
         console.log('获取网页失败')
     });
 }
-function downloadImg(imgArr,filePath,category,baseUrl){
+function downloadImg(imgArr,filePath,{category,baseUrl,downloadType}){
     console.log(`开始下载${filePath}部分内容`)
     let imgArrIndex = 0
     function loop(){
@@ -123,10 +127,15 @@ function downloadImg(imgArr,filePath,category,baseUrl){
             res.on("end", function() {
                 if(imgArrIndex >= imgArr.length -1){
                     console.log(`${filePath}部分内容下载完璧`)
-                    if(category && baseUrl){
+                    if(downloadType===1){ // 单线下载
                         if(categoryIndex < category.length){
                             categoryIndex++
-                            downloadHtml(category,baseUrl)
+                            downloadHtml(category,baseUrl,downloadType)
+                        }
+                    } else { //多线下载
+                        currentDownLoadCount--
+                        if(currentDownLoadCount <= maxConcurrentLimit){
+                            downloadHtml(category,baseUrl,downloadType)
                         }
                     }
                 } else {
