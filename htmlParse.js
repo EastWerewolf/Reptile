@@ -2,7 +2,6 @@ const https = require('https');
 const fs = require('fs');
 const chreeio = require('cheerio')
 const BaseUrl = 'https://dl.ixxcc.com/images/'
-let categoryIndex = 0;
 
 // 读取目录 写入category.json目录部分的代码省略
  function readCategory(readPath,writePath){
@@ -54,6 +53,7 @@ readCategory(readPath,writePath).then(category=>{
  */
 const maxConcurrentLimit = 5 // 最大并行限制
 let currentDownLoadCount = 0 //并行纪录
+let categoryIndex = 0; // category Index
 function downloadHtml(category,baseUrl,downloadType = 1){
     const filePath = category[categoryIndex]
     const Slash = filePath.indexOf('/') > -1 ? '' : '/'
@@ -65,7 +65,6 @@ function downloadHtml(category,baseUrl,downloadType = 1){
             data += chunk;
         });
         res.on("end", function() {
-            currentDownLoadCount++
             const imgArr = []
             $ = chreeio.load(data)
             $('a').each((index,ele )=>{
@@ -87,11 +86,12 @@ function downloadHtml(category,baseUrl,downloadType = 1){
                     }
                 }
             } else { // 并行下载 有内存溢出风险
+                currentDownLoadCount++
                 if(hasImage){ // 有图片下载图片
                     downloadImg(imgArr,path,{category,baseUrl,downloadType})
                 }
-                if(categoryIndex < category.length){ // 当前网页解析完成进行下一个网页解析 maxConcurrentLimit限制并行
-                    if(currentDownLoadCount <= maxConcurrentLimit){
+                if(categoryIndex < category.length){ // 当前网页解析完成进行下一个网页解析 
+                    if(currentDownLoadCount <= maxConcurrentLimit){ // maxConcurrentLimit限制并行
                         categoryIndex++
                         downloadHtml(category,baseUrl,downloadType)
                     }
@@ -127,17 +127,14 @@ function downloadImg(imgArr,filePath,{category,baseUrl,downloadType}){
             res.on("end", function() {
                 if(imgArrIndex >= imgArr.length -1){
                     console.log(`${filePath}部分内容下载完璧`)
-                    if(downloadType===1){ // 单线下载
-                        if(categoryIndex < category.length){
-                            categoryIndex++
-                            downloadHtml(category,baseUrl,downloadType)
-                        }
-                    } else { //多线下载
+                    if(downloadType===2){ // 多线下载
                         currentDownLoadCount--
-                        if(currentDownLoadCount <= maxConcurrentLimit){
-                            downloadHtml(category,baseUrl,downloadType)
-                        }
                     }
+                    if(categoryIndex < category.length){
+                        categoryIndex++
+                        downloadHtml(category,baseUrl,downloadType)
+                    }
+                     
                 } else {
                     imgArrIndex++
                     loop()
