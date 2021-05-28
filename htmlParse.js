@@ -14,18 +14,20 @@ let categoryIndex = 0;
             } else {
                 const category = JSON.parse(data)
                 resolve(category)
-                // 创建目录 跑一边足够
-                // category.forEach(i=>{
-                //     let path = ''
-                //     if (i.indexOf('/')> -1){
-                //         path = i.split('/')[0]
-                //     } else {
-                //         return
-                //     }
-                //     fs.mkdir(`${writePath}${path}`, { recursive: true }, (err) => {
-                //         if (err) throw err;
-                //     });
-                // })
+                // 创建目录 跑一遍足够
+                if (writePath) {
+                    category.forEach(i=>{
+                        let path = ''
+                        if (i.indexOf('/')> -1){
+                            path = i.split('/')[0]
+                        } else {
+                            return
+                        }
+                        fs.mkdir(`${writePath}${path}`, { recursive: true }, (err) => {
+                            if (err) throw err;
+                        });
+                    })
+                }
             }
         })
     })
@@ -40,10 +42,10 @@ const downloadPart = [{
     readPath: './imagePath/category1.json',
     baseUrl:'https://dl.ixxcc.com/images/cosplay/'
 }]
-// 启动器 读取路径 下载文件 第一次跑需要加上writePath 将写入目录部分代码注释打开
+// 启动器 读取路径 下载文件 第一次跑需要加上writePath
 const part = 1; // 0/1  0 下载一级目录内容  1下载二级目录内容
 const {readPath,writePath,baseUrl} = downloadPart[part]
-readCategory(readPath,writePath).then(category=>{
+readCategory(readPath).then(category=>{
     downloadHtml(category,baseUrl)
 })
 /*

@@ -4,6 +4,8 @@
   "description": "爬虫",
   "main": "api.js",
   "scripts": {
+    "htmlParse": "node htmlParse.js",
+    "apiParse": "node api.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "me",
