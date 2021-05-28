@@ -40,7 +40,7 @@ const downloadPart = [{
     baseUrl:BaseUrl
 },{
     writePath:'./imagePath/cosplay/',
-    readPath: './imagePath/category2.json',
+    readPath: './imagePath/category1.json',
     baseUrl:'https://dl.ixxcc.com/images/cosplay/'
 }]
 // 启动器 读取路径 下载文件 第一次跑需要加上writePath
