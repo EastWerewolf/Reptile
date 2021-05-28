@@ -12,6 +12,7 @@ let categoryIndex = 0;
                 console.log('文件读取失败')
                 reject('文件读取失败')
             } else {
+                // console.log(data)
                 const category = JSON.parse(data)
                 resolve(category)
                 // 创建目录 跑一遍足够
@@ -39,7 +40,7 @@ const downloadPart = [{
     baseUrl:BaseUrl
 },{
     writePath:'./imagePath/cosplay/',
-    readPath: './imagePath/category1.json',
+    readPath: './imagePath/category2.json',
     baseUrl:'https://dl.ixxcc.com/images/cosplay/'
 }]
 // 启动器 读取路径 下载文件 第一次跑需要加上writePath
@@ -73,14 +74,24 @@ function downloadHtml(category,baseUrl,downloadType = 1){
                 }
             })
             const path = baseUrl.replace(BaseUrl,'') + filePath.replace('/','');
+            const hasImage = imgArr.length > 0
             // 下载方式 二选一即可 这里选择单线下载
             if(downloadType === 1){ // 单线下载 下载图片方法需加上category,baseUrl 参数 并行下载需要去掉这两个参数
-                downloadImg(imgArr,path,category,baseUrl)
+                if (hasImage) { // 有图片下载
+                    downloadImg(imgArr,path,category,baseUrl)
+                } else { // 无图片进行下一个网页的爬取
+                    if(categoryIndex < category.length){
+                        categoryIndex++
+                        downloadHtml(category,baseUrl,downloadType)
+                    }
+                }
             } else { // 并行下载 有内存溢出风险
-                downloadImg(imgArr,path)
-                if(categoryIndex < category.length){
+                if(hasImage){ // 有图片下载图片
+                    downloadImg(imgArr,path)
+                }
+                if(categoryIndex < category.length){ // 当前网页解析完成进行下一个网页解析
                     categoryIndex++
-                    downloadHtml(category,baseUrl)
+                    downloadHtml(category,baseUrl,downloadType)
                 }
             }
 
@@ -95,6 +106,7 @@ function downloadImg(imgArr,filePath,category,baseUrl){
     console.log(`开始下载${filePath}部分内容`)
     let imgArrIndex = 0
     function loop(){
+        console.log(imgArr[imgArrIndex],'imgArr[imgArrIndex]')
         const img = imgArr[imgArrIndex].split('./')[1]
         const url = BaseUrl + filePath + '/' + img
         const arr = url.split('/')
