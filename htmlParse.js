@@ -41,7 +41,7 @@ const downloadPart = [{
     baseUrl:'https://dl.ixxcc.com/images/cosplay/'
 }]
 // 启动器 读取路径 下载文件 第一次跑需要加上writePath
-const part = 1; // 0/1  0 下载一级目录内容  1下载二级目录内容
+const part = 0; // 0/1  0 下载一级目录内容  1下载二级目录内容
 const {readPath,writePath,baseUrl} = downloadPart[part]
 readCategory(readPath,writePath).then(category=>{
     downloadHtml(category,baseUrl,2)
@@ -90,12 +90,12 @@ function downloadHtml(category,baseUrl,downloadType = 1){
                 if(hasImage){ // 有图片下载图片
                     downloadImg(imgArr,path,{category,baseUrl,downloadType})
                 }
-                if(categoryIndex < category.length){ // 当前网页解析完成进行下一个网页解析 
+                if(categoryIndex < category.length){ // 当前网页解析完成进行下一个网页解析
                     if(currentDownLoadCount <= maxConcurrentLimit){ // maxConcurrentLimit限制并行
                         categoryIndex++
                         downloadHtml(category,baseUrl,downloadType)
                     }
-                    
+
                 }
             }
 
@@ -134,7 +134,7 @@ function downloadImg(imgArr,filePath,{category,baseUrl,downloadType}){
                         categoryIndex++
                         downloadHtml(category,baseUrl,downloadType)
                     }
-                     
+
                 } else {
                     imgArrIndex++
                     loop()
