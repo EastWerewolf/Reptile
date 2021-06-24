@@ -3,34 +3,6 @@ const fs = require('fs');
 const chreeio = require('cheerio')
 const BaseUrl = 'https://dl.ixxcc.com/images/'
 
-// 读取目录 写入category.json目录部分的代码省略
- function readCategory(readPath,writePath){
-    return new Promise((resolve,reject)=>{
-        fs.readFile(readPath,'utf-8',(err,data)=>{
-            if(err){
-                console.log('文件读取失败')
-                reject('文件读取失败')
-            } else {
-                // console.log(data)
-                const category = JSON.parse(data)
-                resolve(category)
-                // 创建目录 跑一遍足够
-                if (writePath) {
-                    category.forEach(i=>{
-                        let path = i
-                        if (i.indexOf('/')> -1){
-                            path = i.split('/')[0]
-                        }
-                        fs.mkdir(`${writePath}${path}`, { recursive: true }, (err) => {
-                            if (err) throw err;
-                        });
-                    })
-                }
-            }
-        })
-    })
-}
-
 const downloadPart = [{
     writePath:'./imagePath/',
     readPath: './imagePath/category.json',
@@ -98,9 +70,6 @@ function downloadHtml(category,baseUrl,downloadType = 1){
 
                 }
             }
-
-
-
         });
     }).on("error", function() {
         console.log('获取网页失败')
@@ -134,7 +103,6 @@ function downloadImg(imgArr,filePath,{category,baseUrl,downloadType}){
                         categoryIndex++
                         downloadHtml(category,baseUrl,downloadType)
                     }
-
                 } else {
                     imgArrIndex++
                     loop()
@@ -156,5 +124,32 @@ function writeFile(name,imgData,path){
         } else {
             console.log(`./imagePath/${path}/${name}.jpg 写入成功`)
         }
+    })
+}
+// 读取目录 写入category.json目录部分的代码省略
+function readCategory(readPath,writePath){
+    return new Promise((resolve,reject)=>{
+        fs.readFile(readPath,'utf-8',(err,data)=>{
+            if(err){
+                console.log('文件读取失败')
+                reject('文件读取失败')
+            } else {
+                // console.log(data)
+                const category = JSON.parse(data)
+                resolve(category)
+                // 创建目录 跑一遍足够
+                if (writePath) {
+                    category.forEach(i=>{
+                        let path = i
+                        if (i.indexOf('/')> -1){
+                            path = i.split('/')[0]
+                        }
+                        fs.mkdir(`${writePath}${path}`, { recursive: true }, (err) => {
+                            if (err) throw err;
+                        });
+                    })
+                }
+            }
+        })
     })
 }
